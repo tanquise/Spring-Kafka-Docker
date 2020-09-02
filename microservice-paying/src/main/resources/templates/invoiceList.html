@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>Invoice</title>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"/>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+  <script type="text/javascript">
+  showFormPay = function(id, amount){
+	  $("#idInvoice").val(id);
+	  $("#amount").val(amount);
+  }
+  save = function(){
+	  $("#btn-submit").attr("disabled",true);
+	  var payForm = {
+	      "idInvoice" :{idInvoice:$("#idInvoice").val()} ,
+	      "amount" :$("#amount").val(),
+	      "state" :$("#state").val()
+	   }
+	  var queryString = JSON.stringify(payForm);
+	  $.ajax({
+	      type:'post',
+	      url:"/operation",
+	      data : queryString,
+	      dataType : 'json',
+	      contentType: 'application/json;charset=UTF-8',
+	      success: function(data){
+	    	  $("#btn-submit").removeAttr("disabled");
+	    	  $(location).attr('href','/');
+	      },
+	      error: function(request,status,error) {
+	          alert(request.responseText);
+	      }
+	  });
+  }
+  </script>
+</head>
+ 
+<body>
+<div class="container">
+  <h1>List Invoice - Pay</h1>
+  <div class="row col-md-7 table-responsive">
+    <table id="customerTable" class="table">
+      <thead>
+        <tr>
+          <th>Id</th>
+          <th>Type Doc.</th>
+          <th>Number Doc.</th>
+          <th>Amount</th>
+          <th>State</th>
+          <th>Option</th>
+        </tr>
+      </thead>
+      <tbody>
+         <tr th:each="invoice, rowStat: ${InvoiceList}"
+            th:style="${rowStat.odd} ? 'color: gray' : 'color: blue;'">
+              <td th:text="${invoice.idInvoice}">1</td>
+          	  <td th:text="${invoice.typeDoc}">Factura</td>
+          	  <td th:text="${invoice.numberDoc}">F001-1</td>
+          	  <td th:text="${invoice.amount}">2000</td>
+              <td>
+              	<label class="label label-danger" th:if="${invoice.state=='0'}">To pay</label>
+              	<label class="label label-warning" th:if="${invoice.state=='1'}">Paid</label>
+              </td>
+              <td>
+              	<a th:if="${invoice.state=='0'}" class="btn btn-warning" data-toggle="modal" data-target="#compose-modal" th:attr="onclick=|showFormPay('${invoice.idInvoice}', '${invoice.amount}')|"><i class="fa fa-eye"></i> Pagar</a>
+              </td>
+          </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+<div class="modal draggable fade" id="compose-modal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fa fa-plus"></i> Form Pay</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            </div>
+				<form class="text-center border border-light p-5" action="javascript:save()" id="payForm">
+					<div class="modal-body">
+						<div class="form-row">
+							<div class="col">
+								<label>S/</label>
+							</div>
+							<div class="col">
+								<!-- Last name -->
+								<input type="number" id="amount" name="amount"
+									class="form-control" placeholder="Import">
+							</div>
+						</div>
+					</div>
+					<div class="modal-footer clearfix">
+						<input type="hidden" name="state" id="state" value="1">
+						<input type="hidden" name="idInvoice" id="idInvoice">
+						<button class="btn btn-info" id="btn-submit" type="submit">Save</button>
+						<button type="button" class="btn btn-danger" data-dismiss="modal">
+							<i class="fa fa-times"></i> Close
+						</button>
+					</div>
+				</form>
+			</div>
+    </div>
+</div>
+</body>
+</html>
